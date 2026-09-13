@@ -1,0 +1,28 @@
+name: Publish reviewed game
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check backend readiness
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; const c=JSON.parse(fs.readFileSync("site/config.json")); const r=await fetch(c.apiBase+"/api/health"); const h=await r.json(); if(!r.ok||!h.ai||!h.push) process.exit(1);'
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment
