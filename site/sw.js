@@ -1,4 +1,34 @@
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
-self.addEventListener('push',event=>{let data={};try{data=event.data.json()}catch{};event.waitUntil(self.registration.showNotification('21 DAYS OF career growth',{body:data.body||'วันนี้ยังมีพื้นที่เล็ก ๆ ให้คุณลองเติบโต กลับมาต่อเมื่อพร้อมนะ',icon:'./icon.svg',tag:'career-growth-reminder',data:{url:self.registration.scope}}));});
-self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil((async()=>{const list=await self.clients.matchAll({type:'window',includeUncontrolled:true});const tab=list.find(c=>c.url.startsWith(self.registration.scope));if(tab)return tab.focus();return self.clients.openWindow(self.registration.scope);})());});
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) =>
+  event.waitUntil(self.clients.claim()),
+);
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch {}
+  event.waitUntil(
+    self.registration.showNotification("21 DAYS OF career growth", {
+      body:
+        data.body ||
+        "วันนี้ยังมีพื้นที่เล็ก ๆ ให้คุณลองเติบโต กลับมาต่อเมื่อพร้อมนะ",
+      icon: "./icon.svg",
+      tag: "career-growth-reminder-" + (data.time || "daily"),
+      data: { url: self.registration.scope },
+    }),
+  );
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const list = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      const tab = list.find((c) => c.url.startsWith(self.registration.scope));
+      if (tab) return tab.focus();
+      return self.clients.openWindow(self.registration.scope);
+    })(),
+  );
+});
